@@ -103,8 +103,10 @@ class _DrawingBoardState extends State<DrawingBoard> {
             alignment: Alignment.bottomCenter,
             child: Container(
               margin: EdgeInsets.all(10),
-              color: selectedColor.withOpacity(0.3),
               padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                  color: selectedColor.withOpacity(0.3),
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -148,6 +150,7 @@ class _DrawingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < drawingPoints.length - 1; i++) {
+      // print(drawingPoints[i].hashCode);
       if (drawingPoints[i] != null && drawingPoints[i + 1] != null) {
         canvas.drawLine(drawingPoints[i]!.offset, drawingPoints[i + 1]!.offset,
             drawingPoints[i]!.paint);
