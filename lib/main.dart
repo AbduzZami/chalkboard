@@ -28,7 +28,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
     Colors.red,
     Colors.black,
     Colors.yellow,
-    Colors.amberAccent,
+    Colors.white,
     Colors.purple,
     Colors.green,
   ];
@@ -98,20 +98,24 @@ class _DrawingBoardState extends State<DrawingBoard> {
               ],
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          color: Colors.grey[200],
-          padding: EdgeInsets.all(10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              colors.length,
-              (index) => _buildColorChose(colors[index]),
+          Positioned.fill(
+              child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              margin: EdgeInsets.all(10),
+              color: selectedColor.withOpacity(0.3),
+              padding: EdgeInsets.all(10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  colors.length,
+                  (index) => _buildColorChose(colors[index]),
+                ),
+              ),
             ),
-          ),
-        ),
+          ))
+        ],
       ),
     );
   }
@@ -123,6 +127,7 @@ class _DrawingBoardState extends State<DrawingBoard> {
       child: Container(
         height: isSelected ? 47 : 40,
         width: isSelected ? 47 : 40,
+        margin: EdgeInsets.all(5),
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
