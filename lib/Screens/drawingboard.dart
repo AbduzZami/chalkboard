@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'package:infinite_carousel/infinite_carousel.dart';
 import 'package:flutter/material.dart';
 
 class DrawingBoard extends StatefulWidget {
@@ -10,7 +10,8 @@ class DrawingBoard extends StatefulWidget {
 class _DrawingBoardState extends State<DrawingBoard> {
   Color selectedColor = Colors.black;
   double strokeWidth = 5;
-  List<DrawingPoint?> drawingPoints = [];
+  int currentIndex = 0;
+  List<List<DrawingPoint?>> drawingPoints = [];
   List<Color> colors = [
     Colors.pink,
     Colors.red,
@@ -20,93 +21,180 @@ class _DrawingBoardState extends State<DrawingBoard> {
     Colors.purple,
     Colors.green,
   ];
+  late InfiniteScrollController controller;
+  @override
+  void initState() {
+    // TODO: implement initState
+    controller = InfiniteScrollController();
+    drawingPoints.add([]);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           Center(
-            child: FittedBox(
-              child: Container(
-                height: 500,
-                width: 1000,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: Offset(0, 3), // changes position of shadow
-                    ),
-                  ],
-                ),
-                margin: EdgeInsets.all(20),
-                child: GestureDetector(
-                  onPanStart: (details) {
-                    setState(() {
-                      drawingPoints.add(
-                        DrawingPoint(
-                          details.localPosition,
-                          Paint()
-                            ..color = selectedColor
-                            ..isAntiAlias = true
-                            ..strokeWidth = strokeWidth
-                            ..strokeCap = StrokeCap.round,
-                        ),
-                      );
-                    });
-                  },
-                  onPanUpdate: (details) {
-                    setState(() {
-                      drawingPoints.add(
-                        DrawingPoint(
-                          details.localPosition,
-                          Paint()
-                            ..color = selectedColor
-                            ..isAntiAlias = true
-                            ..strokeWidth = strokeWidth
-                            ..strokeCap = StrokeCap.round,
-                        ),
-                      );
-                    });
-                  },
-                  onPanEnd: (details) {
-                    setState(() {
-                      drawingPoints.add(null);
-                    });
-                  },
-                  child: ClipRect(
-                    clipBehavior: Clip.hardEdge,
-                    child: CustomPaint(
-                      painter: _DrawingPainter(drawingPoints),
-                      child: Container(
-                        height: MediaQuery.of(context).size.height,
-                        width: MediaQuery.of(context).size.width,
+            child: InfiniteCarousel.builder(
+              itemCount: drawingPoints.length,
+              itemExtent: MediaQuery.of(context).size.width * 0.8,
+              center: true,
+              anchor: 0.0,
+              velocityFactor: 0.2,
+              onIndexChanged: (index) {
+                setState(() {
+                  currentIndex = index;
+                  if (drawingPoints.length <= index) {
+                    drawingPoints.add([]);
+                  }
+                });
+              },
+              controller: controller,
+              axisDirection: Axis.horizontal,
+              loop: false,
+              itemBuilder: (context, itemIndex, realIndex) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: FittedBox(
+                    child: Container(
+                      height: 500,
+                      width: 1000,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            spreadRadius: 2,
+                            blurRadius: 2,
+                            offset: Offset(0, 3), // changes position of shadow
+                          ),
+                        ],
+                      ),
+                      margin: EdgeInsets.all(20),
+                      child: GestureDetector(
+                        onPanStart: (details) {
+                          setState(() {
+                            drawingPoints[currentIndex].add(
+                              DrawingPoint(
+                                details.localPosition,
+                                Paint()
+                                  ..color = selectedColor
+                                  ..isAntiAlias = true
+                                  ..strokeWidth = strokeWidth
+                                  ..strokeCap = StrokeCap.round,
+                              ),
+                            );
+                          });
+                        },
+                        onPanUpdate: (details) {
+                          setState(() {
+                            drawingPoints[currentIndex].add(
+                              DrawingPoint(
+                                details.localPosition,
+                                Paint()
+                                  ..color = selectedColor
+                                  ..isAntiAlias = true
+                                  ..strokeWidth = strokeWidth
+                                  ..strokeCap = StrokeCap.round,
+                              ),
+                            );
+                          });
+                        },
+                        onPanEnd: (details) {
+                          setState(() {
+                            drawingPoints[currentIndex].add(null);
+                          });
+                        },
+                        // child: InfiniteCarousel.builder(
+                        //   itemCount: 1,
+                        //   itemExtent: 120,
+                        //   center: true,
+                        //   anchor: 0.0,
+                        //   velocityFactor: 0.2,
+                        //   onIndexChanged: (index) {},
+                        //   controller: controller,
+                        //   axisDirection: Axis.horizontal,
+                        //   loop: true,
+                        //   itemBuilder: (context, itemIndex, realIndex) {
+                        //     return ClipRect(
+                        //         clipBehavior: Clip.hardEdge,
+                        //         child: CustomPaint(
+                        //           painter: _DrawingPainter(drawingPoints),
+                        //         ));
+                        //   },
+                        // )
+                        child: ClipRect(
+                            clipBehavior: Clip.hardEdge,
+                            child: CustomPaint(
+                              painter:
+                                  _DrawingPainter(drawingPoints[itemIndex]),
+                            )),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
           Positioned(
             top: 40,
             right: 30,
-            child: Row(
-              children: [
-                Slider(
-                  min: 0,
-                  max: 40,
-                  value: strokeWidth,
-                  onChanged: (val) => setState(() => strokeWidth = val),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: Center(
+                child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Slider(
+                      min: 0,
+                      max: 40,
+                      value: strokeWidth,
+                      onChanged: (val) => setState(() => strokeWidth = val),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
+                        onPressed: () =>
+                            setState(() => drawingPoints[currentIndex] = []),
+                        icon: Icon(Icons.clear),
+                        label: Text("Clear Board"),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
+                        onPressed: () => controller.previousItem(),
+                        icon: Icon(Icons.arrow_back),
+                        label: Text("Previous"),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
+                        onPressed: () => controller.nextItem(),
+                        icon: Icon(Icons.arrow_forward),
+                        label: Text("Next"),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            drawingPoints.add([]);
+                          });
+                          controller.nextItem();
+                          currentIndex++;
+                        },
+                        icon: Icon(Icons.add),
+                        label: Text("New"),
+                      ),
+                    )
+                  ],
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => setState(() => drawingPoints = []),
-                  icon: Icon(Icons.clear),
-                  label: Text("Clear Board"),
-                )
-              ],
+              ),
             ),
           ),
           Positioned.fill(
