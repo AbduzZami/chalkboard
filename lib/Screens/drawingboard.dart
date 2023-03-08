@@ -272,4 +272,24 @@ class DrawingPoint {
   Paint paint;
 
   DrawingPoint(this.offset, this.paint);
+
+  //from json
+  DrawingPoint.fromJson(Map<String, dynamic> json)
+      : offset = Offset(json['offset']['dx'], json['offset']['dy']),
+        paint = Paint()
+          ..color = Color(json['paint']['color'])
+          ..isAntiAlias = json['paint']['isAntiAlias']
+          ..strokeWidth = json['paint']['strokeWidth']
+          ..strokeCap = StrokeCap.values[json['paint']['strokeCap']];
+
+  // to json
+  Map<String, dynamic> toJson() => {
+        'offset': {'dx': offset.dx, 'dy': offset.dy},
+        'paint': {
+          'color': paint.color.value,
+          'isAntiAlias': paint.isAntiAlias,
+          'strokeWidth': paint.strokeWidth,
+          'strokeCap': paint.strokeCap.index
+        }
+      };
 }
